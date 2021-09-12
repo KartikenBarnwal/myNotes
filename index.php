@@ -1,6 +1,8 @@
 <?php
 
 $success = false;
+$update = false;
+$delete = false;
 
 // Connecting to the DB
 $conn = mysqli_connect('localhost', 'root', '', 'mynotes');
@@ -9,16 +11,40 @@ if (!$conn) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] == "POST") {
-    $title = $_POST["title"];
-    $description  = $_POST["description"];
 
-    $sql = "INSERT INTO `notes` (`sno`, `title`, `description`, `tstamp`) VALUES (NULL, '$title', '$description', current_timestamp())";
-    $result = mysqli_query($conn, $sql);
-    if ($result) {
-        $success = true;
+    // if UPDATE request made
+    if (isset($_POST['snoEdit'])) {
+        $sno = $_POST['snoEdit'];
+        $title = $_POST['titleEdit'];
+        $description = $_POST['descriptionEdit'];
+
+        $sql = "UPDATE `notes` SET `title`='$title',`description`='$description' WHERE `sno`='$sno'";
+        $result = mysqli_query($conn, $sql);
+        if($result){
+            $update = true;
+        }
+    } 
+    else if(isset($_POST['snoDelete'])){    // else DELETE request made
+        $sno = $_POST['snoDelete'];
+
+        $sql = "DELETE FROM `notes` WHERE `sno`='$sno'";
+        $result = mysqli_query($conn, $sql);
+        if($result){
+            $delete = true;
+        }
     }
-    // header("Location: index.php");
-    // die();
+    else {    // else INSERT request made
+        $title = $_POST["title"];
+        $description  = $_POST["description"];
+
+        $sql = "INSERT INTO `notes` (`sno`, `title`, `description`, `tstamp`) VALUES (NULL, '$title', '$description', current_timestamp())";
+        $result = mysqli_query($conn, $sql);
+        if ($result) {
+            $success = true;
+        }
+        // header("Location: index.php");
+        // die();
+    }
 }
 
 ?>
@@ -39,7 +65,7 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
     <!-- Bootstrap CSS -->
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css" rel="stylesheet" id="bootstrap-css">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/4.1.1/js/bootstrap.min.js"></script>
-    
+
     <script>
         $(document).ready(function() {
             $('#myTable').DataTable();
@@ -55,8 +81,21 @@ if ($_SERVER['REQUEST_METHOD'] == "POST") {
         <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">X</button>
       </div>';
     }
+        else if ($update == true) {
+        echo '<div class="alert alert-success alert-dismissible fade show" style="background-color: #BE00FE" role="alert">
+        The Note has been updated <strong>Successfully!</strong>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">X</button>
+      </div>';
+    }
+        else if ($delete == true) {
+        echo '<div class="alert alert-success alert-dismissible fade show" style="background-color: #BE00FE" role="alert">
+        The Note has been deleted <strong>Successfully!</strong>
+        <button type="button" class="close" data-bs-dismiss="alert" aria-label="Close">X</button>
+      </div>';
+    }
     ?>
     <?php require "form.php" ?>
+
     <?php require "fetchAll.php" ?>
 
 
